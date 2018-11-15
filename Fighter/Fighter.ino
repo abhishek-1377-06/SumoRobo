@@ -1,13 +1,3 @@
-//  Lesson 8, Bot: Competitive Sumo Robot
-
-/*This is the culmination of the Introduction to Robot Programming.
-  This robot is a well-designed baseline that meets all Sumo Robot
-  Competition guidelines and should provide a good platform for you
-  to continue your journey of building autonomous competitive robots.
-  Thank you for reading the book and joining this community of robot
-  enthusiasts.
-*/
-
 #include "Motor.h"
 #include "Pitches.h"
 
@@ -55,6 +45,9 @@ Motor motor;
 // State variables
 int buttonState = 1; // 1 = up, 0 = pressed
 int state       = 1; // 1 = idle, 2 = competing
+// variables to know which sensor touched border first
+boolean isLeftSensorTouchingBorder = 0;
+boolean isRightSensorTouchingBorder = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -127,9 +120,19 @@ void compete() {
   int rightIR  = analogRead(rightSensor);
   Serial.println(leftIR);
   Serial.println(rightIR);
+  if (leftIR < abortThreshold)
+    isLeftSensorTouchingBorder = 1;
+  else
+    isLeftSensorTouchingBorder = 0;
+
+  if (rightIR < abortThreshold)
+    isRightSensorTouchingBorder = 1;
+  else
+    isRightSensorTouchingBorder = 0;
+
   if ( leftIR < abortThreshold || rightIR < abortThreshold ) {
     // if we have detected a ring border, abort!
-    abortBackup();
+    abortBackup(isLeftSensorTouchingBorder,isRightSensorTouchingBorder);
   } else if ( distance < attackDistance ) {
     // We have detected an enemy. Attack!
     attackNow();
@@ -179,10 +182,26 @@ void attackNow() {
 // ring border. This function will immediately halt
 // other control function operations and move in reverse
 // at full speed.
-void abortBackup() {
+void abortBackup(boolean isLeft, boolean isRight) {
+  if (isLeft && isRight) {
+    // turn anticlockwise
+    motor.left(-255);
+    motor.right(-255);
+    delay(300);
+  } else if (isLeft) {
+    // turn anticlockwise
+    motor.left(-255);
+    motor.right(255);
+    delay(300);
+  } else if (isRight) {
+    // turn clockwise
+    motor.left(255);
+    motor.right(-255);
+    delay(300);
+  }
   motor.left(-255);
   motor.right(-255);
-  delay(2000);
+  delay(1000);
 }
 
 
