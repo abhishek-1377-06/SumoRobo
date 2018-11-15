@@ -31,7 +31,7 @@
 /** Global Variables and Configuration Settings **/
 /*************************************************/
 // Competition configuration settings
-#define abortThreshold 400
+#define abortThreshold 200
 #define searchTime     2000
 #define attackDistance 22
 
